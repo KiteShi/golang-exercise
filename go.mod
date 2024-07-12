@@ -3,7 +3,7 @@ module github.com/KiteShi/golang-exercise
 go 1.22.5
 
 require (
-	github.com/go-chi/chi v1.5.5
+	github.com/go-chi/chi/v5 v5.1.0
 	github.com/google/uuid v1.6.0
 	gorm.io/driver/postgres v1.5.9
 	gorm.io/gorm v1.25.11
