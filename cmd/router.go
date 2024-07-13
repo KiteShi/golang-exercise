@@ -22,7 +22,7 @@ func GetRouter() http.Handler {
 		r.Use(m.AuthMiddleware)
 
 		r.Post("/", handler.CreateCompany)
-		r.Put("/{uuid:[a-zA-Z0-9-_]+}", handler.UpdateCompany)
+		r.Patch("/{uuid:[a-zA-Z0-9-_]+}", handler.UpdateCompany)
 		r.Delete("/{uuid:[a-zA-Z0-9-_]+}", handler.DeleteCompany)
 	})
 
