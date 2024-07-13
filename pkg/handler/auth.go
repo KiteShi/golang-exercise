@@ -42,5 +42,8 @@ func LogIn(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("User %s logged in successfully", creds.Username)
 
-	json.NewEncoder(w).Encode(map[string]string{"token": token})
+	if err := json.NewEncoder(w).Encode(map[string]string{"token": token}); err != nil {
+		http.Error(w, "Failed to encode token", http.StatusInternalServerError)
+		log.Printf("Error encoding JWT token %s: %v", creds.Username, err)
+	}
 }
