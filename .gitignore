@@ -1,2 +1,3 @@
 ../golang-exercise/golang-exercise
 *.exe
+.env

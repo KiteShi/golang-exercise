@@ -1,4 +1,4 @@
-package api
+package handler
 
 import (
 	"encoding/json"
@@ -13,11 +13,6 @@ type Credentials struct {
 	Password string `json:"password"`
 }
 
-// TODO: remove temporary credentials
-var users = map[string]string{
-	"admin": "admin",
-}
-
 func LogIn(w http.ResponseWriter, r *http.Request) {
 	var creds Credentials
 	if err := json.NewDecoder(r.Body).Decode(&creds); err != nil {
@@ -26,8 +21,14 @@ func LogIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	expectedPassword, ok := users[creds.Username]
-	if !ok || expectedPassword != creds.Password {
+	validCreds, err := auth.Authenticate(creds.Username, creds.Password)
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		log.Printf("Error authenticate admin: %v", err)
+		return
+
+	}
+	if !validCreds {
 		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		log.Printf("Failed login attempt for username %s", creds.Username)
 		return

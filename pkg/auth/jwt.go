@@ -1,20 +1,35 @@
 package auth
 
 import (
+	"errors"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
-// TODO: remove hardcoded temporary sensitive data
-var jwtKey = []byte("1F9FlnuJbTp7H04cMYQTn283hoct/1tJ8Vw9f80sWFw=")
+var errUninitializedJWT = errors.New("empty JWT key")
+
+var jwtKey []byte
 
 type Claims struct {
 	Username string `json:"username"`
 	jwt.StandardClaims
 }
 
+func InitJWT(key string) error {
+	if len(key) == 0 {
+		return errUninitializedJWT
+	}
+
+	jwtKey = []byte(key)
+	return nil
+}
+
 func GenerateJWT(username string) (string, error) {
+	if err := validateJWTKey(); err != nil {
+		return "", err
+	}
+
 	expirationTime := time.Now().Add(24 * time.Hour)
 	claims := &Claims{
 		Username: username,
@@ -28,6 +43,10 @@ func GenerateJWT(username string) (string, error) {
 }
 
 func ValidateJWT(tokenString string) (*Claims, error) {
+	if err := validateJWTKey(); err != nil {
+		return nil, err
+	}
+
 	claims := &Claims{}
 
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
@@ -43,4 +62,11 @@ func ValidateJWT(tokenString string) (*Claims, error) {
 	}
 
 	return claims, nil
+}
+
+func validateJWTKey() error {
+	if len(jwtKey) == 0 {
+		return errUninitializedJWT
+	}
+	return nil
 }
