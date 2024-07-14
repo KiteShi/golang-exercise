@@ -2,6 +2,8 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -9,6 +11,7 @@ import (
 	"github.com/KiteShi/golang-exercise/pkg/models"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 )
 
@@ -51,6 +54,13 @@ func CreateCompany(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := db.DB.Create(&company).Error; err != nil {
+		var duplicateEntryError = &pgconn.PgError{Code: "23505"}
+		if errors.As(err, &duplicateEntryError) {
+			strErr := fmt.Sprintf("company with name %s already exists", company.Name)
+			http.Error(w, strErr, http.StatusConflict)
+			return
+		}
+
 		http.Error(w, "Failed to create company", http.StatusInternalServerError)
 		log.Printf("Error creating company: %v", err)
 		return
@@ -93,6 +103,13 @@ func UpdateCompany(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := db.DB.Save(&company).Error; err != nil {
+		var duplicateEntryError = &pgconn.PgError{Code: "23505"}
+		if errors.As(err, &duplicateEntryError) {
+			strErr := fmt.Sprintf("company with name %s already exists", company.Name)
+			http.Error(w, strErr, http.StatusConflict)
+			return
+		}
+
 		http.Error(w, "Failed to update company", http.StatusInternalServerError)
 		return
 	}
